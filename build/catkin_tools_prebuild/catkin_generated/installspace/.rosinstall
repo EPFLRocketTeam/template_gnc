@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/alberic/catkin_ws/src/template_gnc/install/setup.sh
