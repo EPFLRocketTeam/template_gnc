@@ -1,6 +1,0 @@
-devel_space: /home/alberic/catkin_ws/src/template_gnc/devel
-install: false
-install_space: /home/alberic/catkin_ws/src/template_gnc/install
-profile: default
-source_space: /home/alberic/catkin_ws/src/template_gnc/src
-workspace: /home/alberic/catkin_ws/src/template_gnc
