@@ -1,0 +1,12 @@
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./setup.zsh
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./local_setup.zsh
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./local_setup.sh
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./env.sh
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./local_setup.bash
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./_setup_util.py
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./setup.sh
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./setup.bash
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/./cmake.lock
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/share/catkin_tools_prebuild/cmake/catkin_tools_prebuildConfig-version.cmake
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/share/catkin_tools_prebuild/cmake/catkin_tools_prebuildConfig.cmake
+Symlinking /home/alberic/catkin_ws/src/template_gnc/devel/lib/pkgconfig/catkin_tools_prebuild.pc
