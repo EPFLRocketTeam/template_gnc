@@ -96,7 +96,7 @@ public:
     }
 
     void load_motor() {
-        std::string path = ros::package::getPath("basic_gnc") + "/config/motor_file.txt";
+        std::string path = ros::package::getPath("template_gnc") + "/config/motor_file.txt";
 
         std::string line;
         std::ifstream myfile(path);
