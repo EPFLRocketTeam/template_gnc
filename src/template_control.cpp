@@ -47,7 +47,7 @@ class ControlNode {
       Rocket rocket;
 
       // Last received rocket state
-      real_time_simulator::State current_state;
+      real_time_simulator::State rocket_state;
 
       // Last requested fsm
       real_time_simulator::FSM rocket_fsm;
@@ -78,7 +78,6 @@ class ControlNode {
 
         // Initialize rocket class with useful parameters
         rocket.init(nh);
-
       }
 
       void initTopics(ros::NodeHandle &nh) 
@@ -102,9 +101,9 @@ class ControlNode {
       // Callback function to store last received state
       void rocket_stateCallback(const real_time_simulator::State::ConstPtr& rocket_state)
       {
-        current_state.pose = rocket_state->pose;
-        current_state.twist = rocket_state->twist;
-        current_state.propeller_mass = rocket_state->propeller_mass;
+        rocket_state.pose = rocket_state->pose;
+        rocket_state.twist = rocket_state->twist;
+        rocket_state.propeller_mass = rocket_state->propeller_mass;
       }
 
       void fsm_Callback(const real_time_simulator::FSM::ConstPtr& fsm)
@@ -120,13 +119,13 @@ class ControlNode {
         geometry_msgs::Vector3 thrust_force;
         geometry_msgs::Vector3 thrust_torque;
 
-        thrust_force.x = -200*current_state.twist.angular.y;
-        thrust_force.y = -200*current_state.twist.angular.x;
+        thrust_force.x = -200*rocket_state.twist.angular.y;
+        thrust_force.y = -200*rocket_state.twist.angular.x;
         thrust_force.z = rocket.get_full_thrust(rocket_fsm.time_now);
 
         thrust_torque.x = thrust_force.y*rocket.total_CM;
         thrust_torque.y = thrust_force.x*rocket.total_CM;
-        thrust_torque.z = -10*current_state.twist.angular.z;
+        thrust_torque.z = -10*rocket_state.twist.angular.z;
 
         control_law.force = thrust_force;
         control_law.torque = thrust_torque;

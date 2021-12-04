@@ -53,16 +53,16 @@ class NavigationNode {
 		Rocket rocket;
 
 		// Last received fsm
-		real_time_simulator::FSM current_fsm;
+		real_time_simulator::FSM rocket_fsm;
 
 		// Last received control
-		real_time_simulator::Control current_control;
+		real_time_simulator::Control rocket_control;
 
 		// Last received sensor data
-		real_time_simulator::Sensor current_sensor;
+		real_time_simulator::Sensor rocket_sensor;
 
 		// Last received real state from simulator
-		real_time_simulator::State current_rocket_state;
+		real_time_simulator::State rocket_state_simu;
 
 		// List of subscribers and publishers
 		ros::Publisher nav_pub;
@@ -85,8 +85,8 @@ class NavigationNode {
         	initTopics(nh);
 
 			// Initialize fsm
-			current_fsm.time_now = 0;
-			current_fsm.state_machine = "Idle";
+			rocket_fsm.time_now = 0;
+			rocket_fsm.state_machine = "Idle";
 
 			// Initialize rocket class with useful parameters
 			rocket.init(nh);
@@ -139,34 +139,34 @@ class NavigationNode {
 		// Callback function to store last received fsm
 		void fsmCallback(const real_time_simulator::FSM::ConstPtr& fsm)
 		{
-			current_fsm.time_now = fsm->time_now;
-			current_fsm.state_machine = fsm->state_machine;
+			rocket_fsm.time_now = fsm->time_now;
+			rocket_fsm.state_machine = fsm->state_machine;
 		}
 
 		// Callback function to store last received control
 		void controlCallback(const real_time_simulator::Control::ConstPtr& control)
 		{
-			current_control.torque = control->torque;
-			current_control.force = control->force;
+			rocket_control.torque = control->torque;
+			rocket_control.force = control->force;
 		}
 
 		// Callback function to store last received state 
 		// !! Only for simulation !!
 		void rocket_stateCallback(const real_time_simulator::State::ConstPtr& rocket_state)
 		{
-			current_rocket_state.pose = rocket_state->pose;
-			current_rocket_state.twist = rocket_state->twist;
-			current_rocket_state.propeller_mass = rocket_state->propeller_mass;
+			rocket_state_simu.pose = rocket_state->pose;
+			rocket_state_simu.twist = rocket_state->twist;
+			rocket_state_simu.propeller_mass = rocket_state->propeller_mass;
 		}
 
 		// Callback function to store last received sensor data
 		void sensorCallback(const real_time_simulator::Sensor::ConstPtr& sensor)
 		{
-			current_sensor.IMU_acc = sensor->IMU_acc;
-			current_sensor.IMU_gyro = sensor->IMU_gyro;
-			current_sensor.baro_height = sensor->baro_height;
+			rocket_sensor.IMU_acc = sensor->IMU_acc;
+			rocket_sensor.IMU_gyro = sensor->IMU_gyro;
+			rocket_sensor.baro_height = sensor->baro_height;
 
-			update_step(current_sensor.baro_height);
+			update_step(rocket_sensor.baro_height);
 		}
 
 		/* ------------ User functions ------------ */
@@ -177,7 +177,7 @@ class NavigationNode {
 			double g0 = 9.81;  // Earth gravity in [m/s^2]
 
 			Eigen::Matrix<double, 3, 1> rocket_control;
-			rocket_control << current_control.force.x, current_control.force.y, current_control.force.z;
+			rocket_control << rocket_control.force.x, rocket_control.force.y, rocket_control.force.z;
 
 			// Orientation of the rocket with quaternion
 			Eigen::Quaternion<double> attitude(x(9), x(6), x(7), x(8));
@@ -185,8 +185,8 @@ class NavigationNode {
 			Eigen::Matrix<double, 3, 3> rot_matrix = attitude.toRotationMatrix();
 
 			// Current acceleration and angular rate from IMU
-			Eigen::Matrix<double, 3, 1> IMU_acc; IMU_acc << current_sensor.IMU_acc.x, current_sensor.IMU_acc.y, current_sensor.IMU_acc.z;
-			x.segment(10,3) << current_sensor.IMU_gyro.x, current_sensor.IMU_gyro.y, current_sensor.IMU_gyro.z;
+			Eigen::Matrix<double, 3, 1> IMU_acc; IMU_acc << rocket_sensor.IMU_acc.x, rocket_sensor.IMU_acc.y, rocket_sensor.IMU_acc.z;
+			x.segment(10,3) << rocket_sensor.IMU_gyro.x, rocket_sensor.IMU_gyro.y, rocket_sensor.IMU_gyro.z;
 
 			// Angular velocity omega in quaternion format to compute quaternion derivative
 			Eigen::Quaternion<double> omega_quat(0.0, x(10), x(11), x(12));
@@ -243,43 +243,43 @@ class NavigationNode {
 		void updateNavigation()
 		{
 			// State machine ------------------------------------------
-			if (current_fsm.state_machine.compare("Idle") == 0)
+			if (rocket_fsm.state_machine.compare("Idle") == 0)
 			{
 				// Do nothing
 			}
 
-			else if (current_fsm.state_machine.compare("Launch") == 0 || current_fsm.state_machine.compare("Rail") == 0)
+			else if (rocket_fsm.state_machine.compare("Launch") == 0 || rocket_fsm.state_machine.compare("Rail") == 0)
 			{
 				predict_step();
 			}
 
-			else if (current_fsm.state_machine.compare("Coast") == 0)
+			else if (rocket_fsm.state_machine.compare("Coast") == 0)
 			{
 				predict_step();
 			}
 			// Parse navigation state and publish it on the /nav_pub topic
-			real_time_simulator::State rocket_navigation;
+			real_time_simulator::State rocket_state;
 
-			rocket_navigation.pose.position.x = X(0);
-			rocket_navigation.pose.position.y = X(1);
-			rocket_navigation.pose.position.z = X(2);
+			rocket_state.pose.position.x = X(0);
+			rocket_state.pose.position.y = X(1);
+			rocket_state.pose.position.z = X(2);
 
-			rocket_navigation.twist.linear.x = X(3);
-			rocket_navigation.twist.linear.y = X(4);
-			rocket_navigation.twist.linear.z = X(5);
+			rocket_state.twist.linear.x = X(3);
+			rocket_state.twist.linear.y = X(4);
+			rocket_state.twist.linear.z = X(5);
 
-			rocket_navigation.pose.orientation.x = X(6);
-			rocket_navigation.pose.orientation.y = X(7);
-			rocket_navigation.pose.orientation.z = X(8);
-			rocket_navigation.pose.orientation.w = X(9);
+			rocket_state.pose.orientation.x = X(6);
+			rocket_state.pose.orientation.y = X(7);
+			rocket_state.pose.orientation.z = X(8);
+			rocket_state.pose.orientation.w = X(9);
 
-			rocket_navigation.twist.angular.x = X(10);
-			rocket_navigation.twist.angular.y = X(11);
-			rocket_navigation.twist.angular.z = X(12);
+			rocket_state.twist.angular.x = X(10);
+			rocket_state.twist.angular.y = X(11);
+			rocket_state.twist.angular.z = X(12);
 
-			rocket_navigation.propeller_mass = X(13);
+			rocket_state.propeller_mass = X(13);
 
-			nav_pub.publish(rocket_navigation);
+			nav_pub.publish(rocket_state);
 
 		}
 };

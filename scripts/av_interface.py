@@ -14,28 +14,25 @@ from real_time_simulator.msg import FSM
 from real_time_simulator.msg import State
 from real_time_simulator.msg import Sensor
 
-import struct
 
+rocket_state = State()
 
-current_kalman = State()
-
-    
-    
-def control_callback(control):
-    global current_control
-    current_control = control
-
+# Send back sensors and control as official flight data for GNC
 def simu_sensor_callback(sensor):
-    # Send back sensors and control as official flight data for GNC
     sensor_pub.publish(sensor)
 
-def kalman_callback(kalman):
-    global current_kalman
-    current_kalman = kalman
+# ------- Receive and store GNC data -------
+def control_callback(control):
+    global rocket_control
+    rocket_control = control
 
-def fsm_callback(fsm):
-    global current_fsm
-    current_fsm = fsm
+def rocket_stateCallback(new_state):
+    global rocket_state
+    rocket_state = new_state
+
+def fsm_callback(new_fsm):
+    global rocket_fsm
+    rocket_fsm = new_fsm
     
 
 
@@ -46,28 +43,27 @@ if __name__ == '__main__':
     THROTTLING = rospy.get_param("/rocket/throttling")
 
     # Create global variable
-    current_control = Control()
+    rocket_control = Control()
 
-    current_fsm = FSM()
-    current_fsm.state_machine = "Idle"
+    rocket_fsm = FSM()
+    rocket_fsm.state_machine = "Idle"
 
     
-
     # Init ROS
     rospy.init_node('av_interface', anonymous=True)
     
     # Subscribed topics: control, navigation state, fsm  
     rospy.Subscriber("control_pub", Control, control_callback)
-    rospy.Subscriber("kalman_rocket_state", State, kalman_callback)
+    rospy.Subscriber("kalman_rocket_state", State, rocket_stateCallback)
     rospy.Subscriber("gnc_fsm_pub", FSM, fsm_callback)
 
     # Published topics: sensor data, actuator feedback
     sensor_pub = rospy.Publisher('sensor_pub', Sensor, queue_size=10)
     actuator_pub = rospy.Publisher('control_measured', Control, queue_size=10)
 
-    # If not in flight mode, we enter the ROS loop to remap sensor data from simulation to real sensor data       
+    # If in simulation mode, we enter the ROS loop to remap sensor data from simulation to real sensor data       
     if GNC_mode == "SIL":
-        measured_control = Control()
+        rocket_control_measured = Control()
         rospy.Subscriber("simu_sensor_pub", Sensor, simu_sensor_callback)
 
         # Load motor thrust curve to get real thrust (for control_measured)
@@ -76,7 +72,7 @@ if __name__ == '__main__':
         f_thrust = interp1d(thrust_curve[:,0], thrust_curve[:,1])
 
         # Init motor force to the one after one integration period
-        current_control.force.z = rospy.get_param("/rocket/maxThrust")[2]
+        rocket_control.force.z = rospy.get_param("/rocket/maxThrust")[2]
 
         rate = rospy.Rate(1.0/(2*rospy.get_param("/rocket/output_delay")))
 
@@ -85,18 +81,18 @@ if __name__ == '__main__':
             # Thread sleep time defined by rate
             rate.sleep()
 
-            if current_fsm.state_machine != "Idle":
+            if rocket_fsm.state_machine != "Idle":
 
-                measured_control = current_control
+                rocket_control_measured = rocket_control
                 real_thrust = 0.0
 
                 if THROTTLING:
-                    real_thrust = current_control.force.z
+                    real_thrust = rocket_control.force.z
                 
                 # Without throttling activated, the thrust curve is used instead
                 else:
-                    if current_control.force.z != 0.0 and current_fsm.time_now >= thrust_curve[0,0] and current_fsm.time_now <= thrust_curve[-1,0]:
-                        real_thrust = float(f_thrust(current_fsm.time_now))
+                    if rocket_control.force.z != 0.0 and rocket_fsm.time_now >= thrust_curve[0,0] and rocket_fsm.time_now <= thrust_curve[-1,0]:
+                        real_thrust = float(f_thrust(rocket_fsm.time_now))
 
-                measured_control.force.z = real_thrust
-                actuator_pub.publish(measured_control)
+                rocket_control_measured.force.z = real_thrust
+                actuator_pub.publish(rocket_control_measured)
