@@ -86,11 +86,14 @@ if __name__ == '__main__':
             rate.sleep()
 
             if current_fsm.state_machine != "Idle":
+
+                measured_control = current_control
                 real_thrust = 0.0
 
                 if THROTTLING:
                     real_thrust = current_control.force.z
-
+                
+                # Without throttling activated, the thrust curve is used instead
                 else:
                     if current_control.force.z != 0.0 and current_fsm.time_now >= thrust_curve[0,0] and current_fsm.time_now <= thrust_curve[-1,0]:
                         real_thrust = float(f_thrust(current_fsm.time_now))

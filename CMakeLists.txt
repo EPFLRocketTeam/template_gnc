@@ -228,9 +228,9 @@ add_executable(template_fsm src/template_fsm.cpp)
 target_link_libraries(template_fsm ${catkin_LIBRARIES})
 add_dependencies(template_fsm ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-# add_executable(template_control src/template_control.cpp)
-# target_link_libraries(template_control ${catkin_LIBRARIES})
-# add_dependencies(template_control ${catkin_EXPORTED_TARGETS})
+add_executable(template_control src/template_control.cpp)
+target_link_libraries(template_control ${catkin_LIBRARIES})
+add_dependencies(template_control ${catkin_EXPORTED_TARGETS})
 
 # add_executable(template_guidance src/gnc/guidance.cpp)
 # target_link_libraries(template_guidance Eigen3::Eigen OsqpEigen::OsqpEigen ${catkin_LIBRARIES})

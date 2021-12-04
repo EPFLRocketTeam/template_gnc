@@ -41,8 +41,7 @@
 
 #include "rocket_model.hpp"
 
-class ControlNode()
-{
+class ControlNode {
   private:
       // Class with useful rocket parameters and methods
       Rocket rocket;
@@ -51,7 +50,7 @@ class ControlNode()
       real_time_simulator::State current_state;
 
       // Last requested fsm
-      real_time_simulator::FSM current_fsm;
+      real_time_simulator::FSM rocket_fsm;
 
       // List of subscribers and publishers
 
@@ -78,26 +77,26 @@ class ControlNode()
         rocket_fsm.state_machine = "Idle";
 
         // Initialize rocket class with useful parameters
-        rocket.init(n);
+        rocket.init(nh);
 
       }
 
       void initTopics(ros::NodeHandle &nh) 
       {
         // Create control publisher
-        control_pub = n.advertise<real_time_simulator::Control>("control_pub", 10);
+        control_pub = nh.advertise<real_time_simulator::Control>("control_pub", 10);
 
         // Subscribe to state message from basic_gnc
-        rocket_state_sub = n.subscribe("kalman_rocket_state", 100, &ControlNode::rocket_stateCallback, this);
+        rocket_state_sub = nh.subscribe("kalman_rocket_state", 100, &ControlNode::rocket_stateCallback, this);
 
         // Subscribe to fsm and time from time_keeper
-        fsm_sub = n.subscribe("gnc_fsm_pub", 100, &ControlNode::fsm_Callback, this);
+        fsm_sub = nh.subscribe("gnc_fsm_pub", 100, &ControlNode::fsm_Callback, this);
 
         // Setup Time_keeper client and srv variable for FSM and time synchronization
-        client_fsm = n.serviceClient<real_time_simulator::GetFSM>("getFSM_gnc");
+        client_fsm = nh.serviceClient<real_time_simulator::GetFSM>("getFSM_gnc");
 
         // Setup Waypoint client and srv variable for trajectory following
-        client_waypoint = n.serviceClient<real_time_simulator::GetWaypoint>("getWaypoint");
+        client_waypoint = nh.serviceClient<real_time_simulator::GetWaypoint>("getWaypoint");
       }
 
       // Callback function to store last received state
@@ -110,8 +109,8 @@ class ControlNode()
 
       void fsm_Callback(const real_time_simulator::FSM::ConstPtr& fsm)
       {
-        current_fsm.state_machine = fsm->state_machine;
-        current_fsm.time_now = fsm->time_now;
+        rocket_fsm.state_machine = fsm->state_machine;
+        rocket_fsm.time_now = fsm->time_now;
       }
 
       real_time_simulator::Control P_control()
@@ -123,7 +122,7 @@ class ControlNode()
 
         thrust_force.x = -200*current_state.twist.angular.y;
         thrust_force.y = -200*current_state.twist.angular.x;
-        thrust_force.z = rocket.get_full_thrust(current_fsm.time_now);
+        thrust_force.z = rocket.get_full_thrust(rocket_fsm.time_now);
 
         thrust_torque.x = thrust_force.y*rocket.total_CM;
         thrust_torque.y = thrust_force.x*rocket.total_CM;
@@ -144,29 +143,28 @@ class ControlNode()
         //Get current FSM and time
         if(client_fsm.call(srv_fsm))
         {
-          current_fsm = srv_fsm.response.fsm;
+          rocket_fsm = srv_fsm.response.fsm;
         }
       
         // State machine ------------------------------------------
-        if (current_fsm.state_machine.compare("Idle") == 0)
+        if (rocket_fsm.state_machine.compare("Idle") == 0)
         {
           // Do nothing
         }
 
         else 
         {
-          if (current_fsm.state_machine.compare("Rail") == 0)
+          if (rocket_fsm.state_machine.compare("Rail") == 0)
           {
-            control_law = PD_control();
+            control_law = P_control();
           }
 
-          else if (current_fsm.state_machine.compare("Launch") == 0)
+          else if (rocket_fsm.state_machine.compare("Launch") == 0)
           {
-
-            control_law = PD_control();
+            control_law = P_control();
           }
 
-          else if (current_fsm.state_machine.compare("Coast") == 0)
+          else if (rocket_fsm.state_machine.compare("Coast") == 0)
           {
 
           }
@@ -176,8 +174,6 @@ class ControlNode()
       }
 
       
-
-
 
 };
 
@@ -195,8 +191,9 @@ int main(int argc, char **argv)
   ControlNode controlNode(nh);
 	
   // Thread to compute control. Duration defines interval time in seconds
-  ros::Timer control_thread = n.createTimer(ros::Duration(0.05), [&](const ros::TimerEvent&) 
+  ros::Timer control_thread = nh.createTimer(ros::Duration(0.05), [&](const ros::TimerEvent&) 
 	{
+    controlNode.updateControl();
     
   });
 

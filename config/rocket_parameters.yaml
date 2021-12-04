@@ -50,6 +50,6 @@ Cd:
   - 2
   - 2
   - 0.33
-throttling: False
+throttling: True
 input_delay: 34.0e-3 # Mean delay between external actions and its reception
 output_delay: 80.0e-3 # Mean delay between output command and its effect
