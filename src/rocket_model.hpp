@@ -137,6 +137,13 @@ public:
 
         return interp_thrust;
     }
+    float check_apogee(float mass, float altitude, float speed)
+    {
+        float BC = drag_coeff[2]/mass;
+        float g0 = 9.81;
+
+        return altitude + std::log(1 + speed*speed*BC/g0)/(2*BC); 
+    }
 };
 
 #endif //SRC_ROCKET_MODEL_HPP

@@ -176,8 +176,8 @@ class NavigationNode {
 			// -------------- Simulation variables -----------------------------
 			double g0 = 9.81;  // Earth gravity in [m/s^2]
 
-			Eigen::Matrix<double, 3, 1> rocket_control;
-			rocket_control << rocket_control.force.x, rocket_control.force.y, rocket_control.force.z;
+			Eigen::Matrix<double, 3, 1> rocket_force;
+			rocket_force << rocket_control.force.x, rocket_control.force.y, rocket_control.force.z;
 
 			// Orientation of the rocket with quaternion
 			Eigen::Quaternion<double> attitude(x(9), x(6), x(7), x(8));
@@ -206,7 +206,7 @@ class NavigationNode {
 			xdot.segment(10, 3) << 0, 0, 0;
 
 			// Mass variation is proportional to total thrust
-			xdot(13) = -rocket_control.norm()/(rocket.Isp*g0);
+			xdot(13) = -rocket_force.norm()/(rocket.Isp*g0);
 		}
 
 		void RK4(double dT)
@@ -242,7 +242,7 @@ class NavigationNode {
 
 		void updateNavigation()
 		{
-			// State machine ------------------------------------------
+			// ----------------- State machine -----------------
 			if (rocket_fsm.state_machine.compare("Idle") == 0)
 			{
 				// Do nothing

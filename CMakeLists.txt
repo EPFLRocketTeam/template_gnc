@@ -232,9 +232,9 @@ add_executable(template_control src/template_control.cpp)
 target_link_libraries(template_control ${catkin_LIBRARIES})
 add_dependencies(template_control ${catkin_EXPORTED_TARGETS})
 
-# add_executable(template_guidance src/gnc/guidance.cpp)
-# target_link_libraries(template_guidance Eigen3::Eigen OsqpEigen::OsqpEigen ${catkin_LIBRARIES})
-# add_dependencies(template_guidance ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_executable(template_guidance src/template_guidance.cpp)
+target_link_libraries(template_guidance ${catkin_LIBRARIES})
+add_dependencies(template_guidance ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(template_navigation src/template_navigation.cpp)
 target_link_libraries(template_navigation ${catkin_LIBRARIES})

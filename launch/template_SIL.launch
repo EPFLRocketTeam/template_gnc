@@ -24,6 +24,7 @@
 
   <node name="template_control" pkg="template_gnc" type="template_control" output ="screen"/>
   <node name="template_navigation" pkg="template_gnc" type="template_navigation" output ="screen"/>
+  <node name="template_guidance" pkg="template_gnc" type="template_guidance" output ="screen"/>
   <node name="template_fsm" pkg="template_gnc" type="template_fsm" output ="screen"/>
   <node name="av_interface" pkg="template_gnc" type="av_interface.py" output ="screen"/>
 
