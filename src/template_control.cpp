@@ -53,7 +53,6 @@ class ControlNode {
       real_time_simulator::FSM rocket_fsm;
 
       // List of subscribers and publishers
-
       ros::Publisher control_pub;
 
       ros::Subscriber rocket_state_sub;
@@ -61,9 +60,6 @@ class ControlNode {
 
       ros::ServiceClient client_fsm;
       real_time_simulator::GetFSM srv_fsm;
-
-      ros::ServiceClient client_waypoint;
-      real_time_simulator::GetWaypoint srv_waypoint;	
 
     public:
 
@@ -94,16 +90,14 @@ class ControlNode {
         // Setup Time_keeper client and srv variable for FSM and time synchronization
         client_fsm = nh.serviceClient<real_time_simulator::GetFSM>("getFSM_gnc");
 
-        // Setup Waypoint client and srv variable for trajectory following
-        client_waypoint = nh.serviceClient<real_time_simulator::GetWaypoint>("getWaypoint");
       }
 
       // Callback function to store last received state
-      void rocket_stateCallback(const real_time_simulator::State::ConstPtr& rocket_state)
+      void rocket_stateCallback(const real_time_simulator::State::ConstPtr& new_rocket_state)
       {
-        rocket_state.pose = rocket_state->pose;
-        rocket_state.twist = rocket_state->twist;
-        rocket_state.propeller_mass = rocket_state->propeller_mass;
+        rocket_state.pose = new_rocket_state->pose;
+        rocket_state.twist = new_rocket_state->twist;
+        rocket_state.propeller_mass = new_rocket_state->propeller_mass;
       }
 
       void fsm_Callback(const real_time_simulator::FSM::ConstPtr& fsm)
@@ -145,7 +139,7 @@ class ControlNode {
           rocket_fsm = srv_fsm.response.fsm;
         }
       
-        // State machine ------------------------------------------
+        // ----------------- State machine -----------------
         if (rocket_fsm.state_machine.compare("Idle") == 0)
         {
           // Do nothing
