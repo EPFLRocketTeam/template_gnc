@@ -1,11 +1,11 @@
 /*
-* Node to estimate the rocket full state (position, velocity, quaternion, angular rate and mass) 
+* Node to estimate the rocket full state (position, velocity, attitude quaternion, angular rate and mass) 
 * from the sensor data and commanded thrust and torque of the rocket engine
 *
 * Inputs: 
-*   - Finite state machine from the basic_gnc package:	\gnc_fsm_pub
-*   - 3D force and torque from the rocket engine:		\control_pub
-*   - Sensor data (IMU and barometer):					\sensor_pub
+*   - Finite state machine from the template_fsm :	     /gnc_fsm_pub
+*   - Measured 3D force and torque from av_interface:	 /control_measured
+*   - Sensor data (IMU and barometer) from av_interface: /sensor_pub
 *
 * Parameters:
 *   - Rocket model: 		/config/rocket_parameters.yaml
@@ -13,7 +13,7 @@
 #	- Kalman matrix: 		class NavigationNode
 *
 * Outputs:
-*   - Complete estimated state : \kalman_rocket_state
+*   - Complete estimated state : /kalman_rocket_state
 *
 */
 
@@ -60,9 +60,6 @@ class NavigationNode {
 
 		// Last received sensor data
 		real_time_simulator::Sensor rocket_sensor;
-
-		// Last received real state from simulator
-		real_time_simulator::State rocket_state_simu;
 
 		// List of subscribers and publishers
 		ros::Publisher nav_pub;
@@ -125,10 +122,7 @@ class NavigationNode {
 			fsm_sub = nh.subscribe("gnc_fsm_pub", 100, &NavigationNode::fsmCallback, this);
 
 			// Subscribe to control for kalman estimator
-			control_sub = nh.subscribe("control_pub", 100, &NavigationNode::controlCallback, this);
-
-			// Subscribe to state message from simulation
-			rocket_state_sub = nh.subscribe("rocket_state", 100, &NavigationNode::rocket_stateCallback, this);
+			control_sub = nh.subscribe("control_measured", 100, &NavigationNode::controlCallback, this);
 
 			// Subscribe to sensor for kalman correction
 			sensor_sub = nh.subscribe("sensor_pub", 100, &NavigationNode::sensorCallback, this);
@@ -148,15 +142,6 @@ class NavigationNode {
 		{
 			rocket_control.torque = control->torque;
 			rocket_control.force = control->force;
-		}
-
-		// Callback function to store last received state 
-		// !! Only for simulation !!
-		void rocket_stateCallback(const real_time_simulator::State::ConstPtr& rocket_state)
-		{
-			rocket_state_simu.pose = rocket_state->pose;
-			rocket_state_simu.twist = rocket_state->twist;
-			rocket_state_simu.propeller_mass = rocket_state->propeller_mass;
 		}
 
 		// Callback function to store last received sensor data

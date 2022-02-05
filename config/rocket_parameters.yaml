@@ -3,7 +3,6 @@
 # Defines parameters specific to the rocket:
 #   - General dimensions of the components
 #   - Rocket engine specifications
-#   - Targeted apogee
 #
 # ----------------------------------------------------
 stages: 4

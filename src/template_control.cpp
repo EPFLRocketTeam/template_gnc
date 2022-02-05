@@ -3,16 +3,17 @@
 * Can also be used by the simulation for SIL and PIL tests.
 *
 * Inputs: 
-*   - Finite state machine from the basic_gnc package:	\gnc_fsm_pub
-*   - Estimated state from basic_navigation:		        \kalman_rocket_state
+*   - Finite state machine from the template_fsm :	    /gnc_fsm_pub
+*   - Estimated state from template_navigation:		      /kalman_rocket_state
 *
-* Parameters:
+* Important parameters:
 *   - Rocket model: 		  /config/rocket_parameters.yaml
 *   - Environment model: 	/config/environment_parameters.yaml
-#	  - P gain: 		        PD_control
+*	  - P gain: 		        P_control()
+*   - Control loop period control_thread()
 *
 * Outputs:
-*   - Commanded 3D force and torque for the rocket engine:  \control_pub
+*   - Commanded 3D force and torque for the rocket engine:  /control_pub
 *
 */
 

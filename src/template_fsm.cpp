@@ -3,14 +3,15 @@
 * (Idle, Rail, Launch, Coast)
 *
 * Inputs: 
-*   - Sensor data (IMU and barometer):					\sensor_pub
-*   - Estimated state from basic_navigation:		    \kalman_rocket_state
+*   - Sensor data (IMU and barometer) from av_interface: /sensor_pub
+*   - Estimated state from template_navigation:		     /kalman_rocket_state
+*	- Commanded control from template_control			 /control_pub
 *
-* Parameters:
+* Important parameters:
 *   - Threshold for rocket ignition detection (Rail phase): in FSM_thread
 *
 * Outputs:
-*   - Estimated finite state machine from flight data:	\gnc_fsm_pub
+*   - Estimated finite state machine from flight data:	/gnc_fsm_pub
 *
 */
 

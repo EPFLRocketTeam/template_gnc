@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+
+#
+# This node is the interface between your flight computer in your GNC algorithms 
+# In simulation mode (SIL), it interfaces with the simulator instead of the flight computer
+# 
+# Inputs: 
+#   - Controlled 3D force and torque from template_control:	/control_pub
+#   - Finite state machine from the template_fsm :	        /gnc_fsm_pub
+#   - Estimated state from template_navigation:		        /kalman_rocket_state
+#   - [SIL mode]: Simulated sensor data                     /simu_sensor_pub
+#
+# Important parameters: (none)
+#
+# Outputs:
+#   - Sensor data (IMU and barometer):                          /sensor_pub
+#   - Measured 3D force and torque from the rocket engine :     /control_measured
+#
+
 from numpy.lib.type_check import real
 import rospy
 import rospkg
