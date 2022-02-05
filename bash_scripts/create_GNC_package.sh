@@ -12,8 +12,9 @@ mv ${SCRIPTPATH}/../src/template_navigation.cpp ${SCRIPTPATH}/../src/${packageNa
 mv ${SCRIPTPATH}/../src/template_guidance.cpp ${SCRIPTPATH}/../src/${packageName}_guidance.cpp 
 mv ${SCRIPTPATH}/../src/template_fsm.cpp ${SCRIPTPATH}/../src/${packageName}_fsm.cpp 
 
-mv ${SCRIPTPATH}/../../template_gnc ${SCRIPTPATH}/../../${packageName}_gnc 
 mv ${SCRIPTPATH}/../launch/template_SIL.launch ${SCRIPTPATH}/../launch/${packageName}_SIL.launch 
+
+mv ${SCRIPTPATH}/../../template_gnc ${SCRIPTPATH}/../../${packageName}_gnc 
 
 echo "Updated name of package to $packageName""_gnc"
 
