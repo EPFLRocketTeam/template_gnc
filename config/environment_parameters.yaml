@@ -13,9 +13,9 @@ temperature: 300
 humidity: 0.5
 pressure: 84972.484
 apogee: # targeted apogee
-  - 0
-  - 0
-  - 3000
+  - 100
+  - 100
+  - 2000
 wind_speed: 10
 wind_direction: 45 # angle of wind from north, clockwise
 rail_azimuth: 0 # angle of rail from north, clock wise

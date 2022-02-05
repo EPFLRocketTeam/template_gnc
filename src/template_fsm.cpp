@@ -18,6 +18,7 @@
 #include "real_time_simulator/FSM.h"
 #include "real_time_simulator/State.h"
 #include "real_time_simulator/Sensor.h"
+#include "real_time_simulator/Control.h"
 
 #include <time.h>
 
@@ -37,6 +38,9 @@ class FsmNode {
 		// Last received sensor data
 		real_time_simulator::Sensor rocket_sensor;
 
+		// Last received commanded control
+		real_time_simulator::Control rocket_control;
+
 		// Last received rocket state
 		real_time_simulator::State rocket_state;
 
@@ -47,6 +51,7 @@ class FsmNode {
 
 		ros::Subscriber rocket_state_sub;
 		ros::Subscriber sensor_sub;
+		ros::Subscriber control_sub;
 
 		// Other parameters
 		float rail_length = 0;
@@ -84,6 +89,8 @@ class FsmNode {
 			// Subscribe to sensors message
 			sensor_sub = nh.subscribe("sensor_pub", 100, &FsmNode::sensorCallback, this);
 
+			// Subscribe to commanded control message
+			control_sub = nh.subscribe("control_pub", 100, &FsmNode::controlCallback, this);
 		}
 
 		void rocket_stateCallback(const real_time_simulator::State::ConstPtr& new_rocket_state)
@@ -99,6 +106,13 @@ class FsmNode {
 			rocket_sensor.IMU_acc = new_sensor->IMU_acc;
 			rocket_sensor.IMU_gyro = new_sensor->IMU_gyro;
 			rocket_sensor.baro_height = new_sensor->baro_height;
+		}
+
+		// Callback function to store last received commanded control
+		void controlCallback(const real_time_simulator::Control::ConstPtr& new_control)
+		{
+			rocket_control.force = new_control->force;
+			rocket_control.torque = new_control->torque;
 		}
 
 		// Service function: send back fsm (time + state machine)
@@ -143,7 +157,7 @@ class FsmNode {
 				else if (rocket_fsm.state_machine.compare("Launch") == 0)
 				{
 					// End of burn -> no more thrust
-					if(rocket_state.propeller_mass < 0)
+					if(rocket_state.propeller_mass < 0 || rocket_control.force.z == 0)
 					{
 						rocket_fsm.state_machine = "Coast";
 					}
