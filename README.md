@@ -18,10 +18,10 @@ cd ~/catkin_ws/src
 git clone git@github.com:EPFLRocketTeam/template_gnc.git
 ```
 
-Then rename the package with the name of your GNC project using the provided script. For example if you want to name your project `new_test_rocket_gnc`, you would do:
+Then rename the package with the name of your GNC project using the provided script. For example if you want to name your project `test_rocket_gnc`, you would do:
 ```bash
 cd ~/catkin_ws/src/template_gnc
-bash_scripts/create_GNC_package.sh new_test_rocket
+bash_scripts/create_GNC_package.sh test_rocket
 ```
 Note that the script will automatically add `_gnc` at the end to respect the convention. The name is also converted to lower case.
 
