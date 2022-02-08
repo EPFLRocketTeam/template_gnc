@@ -13,8 +13,8 @@ temperature: 300
 humidity: 0.5
 pressure: 84972.484
 apogee: # targeted apogee
-  - 100
-  - 100
+  - 0
+  - 0
   - 2000
 wind_speed: 10
 wind_direction: 45 # angle of wind from north, clockwise

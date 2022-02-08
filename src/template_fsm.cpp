@@ -85,13 +85,13 @@ class FsmNode {
 			timer_pub = nh.advertise<real_time_simulator::FSM>("gnc_fsm_pub", 10);
 
 			// Subscribe to state message
-			rocket_state_sub = nh.subscribe("kalman_rocket_state", 100, &FsmNode::rocket_stateCallback, this);
+			rocket_state_sub = nh.subscribe("kalman_rocket_state", 1, &FsmNode::rocket_stateCallback, this);
 
 			// Subscribe to sensors message
-			sensor_sub = nh.subscribe("sensor_pub", 100, &FsmNode::sensorCallback, this);
+			sensor_sub = nh.subscribe("sensor_pub", 1, &FsmNode::sensorCallback, this);
 
 			// Subscribe to commanded control message
-			control_sub = nh.subscribe("control_pub", 100, &FsmNode::controlCallback, this);
+			control_sub = nh.subscribe("control_pub", 1, &FsmNode::controlCallback, this);
 		}
 
 		void rocket_stateCallback(const real_time_simulator::State::ConstPtr& new_rocket_state)
@@ -135,6 +135,7 @@ class FsmNode {
 			{
 				if(rocket_sensor.IMU_acc.z > 30)
 				{
+
 					rocket_fsm.state_machine = "Rail";
 					time_zero = ros::Time::now().toSec();
 				}
@@ -194,7 +195,7 @@ int main(int argc, char **argv)
 	FsmNode fsmNode(nh);
 	
 	// Thread to compute FSM. Duration defines interval time in seconds
-	ros::Timer FSM_thread = nh.createTimer(ros::Duration(0.01),
+	ros::Timer FSM_thread = nh.createTimer(ros::Duration(0.001),
 	[&](const ros::TimerEvent&) 
 	{
 		fsmNode.updateFSM();

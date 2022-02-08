@@ -83,10 +83,10 @@ class ControlNode {
         control_pub = nh.advertise<real_time_simulator::Control>("control_pub", 10);
 
         // Subscribe to state message from basic_gnc
-        rocket_state_sub = nh.subscribe("kalman_rocket_state", 100, &ControlNode::rocket_stateCallback, this);
+        rocket_state_sub = nh.subscribe("kalman_rocket_state", 1, &ControlNode::rocket_stateCallback, this);
 
         // Subscribe to fsm and time from time_keeper
-        fsm_sub = nh.subscribe("gnc_fsm_pub", 100, &ControlNode::fsm_Callback, this);
+        fsm_sub = nh.subscribe("gnc_fsm_pub", 1, &ControlNode::fsm_Callback, this);
 
         // Setup Time_keeper client and srv variable for FSM and time synchronization
         client_fsm = nh.serviceClient<real_time_simulator::GetFSM>("getFSM_gnc");

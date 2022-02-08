@@ -119,13 +119,13 @@ class NavigationNode {
 			nav_pub = nh.advertise<real_time_simulator::State>("kalman_rocket_state", 10);
 
 			// Subscribe to time_keeper for fsm and time
-			fsm_sub = nh.subscribe("gnc_fsm_pub", 100, &NavigationNode::fsmCallback, this);
+			fsm_sub = nh.subscribe("gnc_fsm_pub", 1, &NavigationNode::fsmCallback, this);
 
 			// Subscribe to control for kalman estimator
-			control_sub = nh.subscribe("control_measured", 100, &NavigationNode::controlCallback, this);
+			control_sub = nh.subscribe("control_measured", 1, &NavigationNode::controlCallback, this);
 
 			// Subscribe to sensor for kalman correction
-			sensor_sub = nh.subscribe("sensor_pub", 100, &NavigationNode::sensorCallback, this);
+			sensor_sub = nh.subscribe("sensor_pub", 1, &NavigationNode::sensorCallback, this);
 		}
 
 		/* ------------ Callbacks functions ------------ */
@@ -279,7 +279,7 @@ int main(int argc, char **argv)
 	NavigationNode navigationNode(nh);
 
 	// Thread to compute navigation state. Duration defines interval time in seconds
-	ros::Timer control_thread = nh.createTimer(ros::Duration(0.010),
+	ros::Timer control_thread = nh.createTimer(ros::Duration(0.005),
 	[&](const ros::TimerEvent&) 
 	{
 		navigationNode.updateNavigation();	
