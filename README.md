@@ -8,7 +8,7 @@ You can directly use this package as is, or modify each algorithm as you need it
 ## Installation
 1. Install the simulator
 
-Visit https://github.com/EPFLRocketTeam/real_time_simulator to install the simulator, and check the [documentation](http://wiki.ros.org/real_time_simulator/Installation).
+Visit https://github.com/EPFLRocketTeam/real_time_simulator to install the simulator, and check the [documentation](http://wiki.ros.org/real_time_simulator).
 
 2. Create your first GNC package
 
