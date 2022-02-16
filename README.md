@@ -27,6 +27,14 @@ Note that the script will automatically add `_gnc` at the end to respect the con
 
 You can use this script as many times as you want until you're happy with the name of your project.
 
+3. Build and setup
+```bash
+cd ~/catkin_ws
+catkin_make
+source devel/setup.bash
+```
+
+
 ## Authors
 
 Albéric de Lajarte (albericlajarte@gmail.com)
