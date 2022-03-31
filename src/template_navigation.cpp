@@ -172,6 +172,7 @@ class NavigationNode {
 			// Current acceleration and angular rate from IMU
 			Eigen::Matrix<double, 3, 1> IMU_acc; IMU_acc << rocket_sensor.IMU_acc.x, rocket_sensor.IMU_acc.y, rocket_sensor.IMU_acc.z;
 			x.segment(10,3) << rocket_sensor.IMU_gyro.x, rocket_sensor.IMU_gyro.y, rocket_sensor.IMU_gyro.z;
+			x.segment(10,3) = rot_matrix*x.segment(10,3);
 
 			// Angular velocity omega in quaternion format to compute quaternion derivative
 			Eigen::Quaternion<double> omega_quat(0.0, x(10), x(11), x(12));
