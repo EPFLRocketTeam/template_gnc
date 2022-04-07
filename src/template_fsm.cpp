@@ -5,7 +5,7 @@
 * Inputs: 
 *   - Sensor data (IMU and barometer) from av_interface: /sensor_pub
 *   - Estimated state from template_navigation:		     /kalman_rocket_state
-*	- Commanded control from template_control			 /control_pub
+*	- Commanded gimbal state from template_control		 /gimbal_command_0
 *
 * Important parameters:
 *   - Threshold for rocket ignition detection (Rail phase): in FSM_thread
@@ -19,7 +19,7 @@
 #include "real_time_simulator/FSM.h"
 #include "real_time_simulator/State.h"
 #include "real_time_simulator/Sensor.h"
-#include "real_time_simulator/Control.h"
+#include "real_time_simulator/Gimbal.h"
 
 #include <time.h>
 
@@ -39,8 +39,8 @@ class FsmNode {
 		// Last received sensor data
 		real_time_simulator::Sensor rocket_sensor;
 
-		// Last received commanded control
-		real_time_simulator::Control rocket_control;
+		// Last received feedback control
+		real_time_simulator::Gimbal gimbal_state;
 
 		// Last received rocket state
 		real_time_simulator::State rocket_state;
@@ -91,7 +91,7 @@ class FsmNode {
 			sensor_sub = nh.subscribe("sensor_pub", 1, &FsmNode::sensorCallback, this);
 
 			// Subscribe to commanded control message
-			control_sub = nh.subscribe("control_pub", 1, &FsmNode::controlCallback, this);
+			control_sub = nh.subscribe("gimbal_command_0", 1, &FsmNode::controlCallback, this);
 		}
 
 		void rocket_stateCallback(const real_time_simulator::State::ConstPtr& new_rocket_state)
@@ -110,10 +110,11 @@ class FsmNode {
 		}
 
 		// Callback function to store last received commanded control
-		void controlCallback(const real_time_simulator::Control::ConstPtr& new_control)
+		void controlCallback(const real_time_simulator::Gimbal::ConstPtr& state)
 		{
-			rocket_control.force = new_control->force;
-			rocket_control.torque = new_control->torque;
+			gimbal_state.outer_angle = state->outer_angle;
+			gimbal_state.inner_angle = state->inner_angle;
+			gimbal_state.thrust = state->thrust;
 		}
 
 		// Service function: send back fsm (time + state machine)
@@ -159,7 +160,7 @@ class FsmNode {
 				else if (rocket_fsm.state_machine.compare("Launch") == 0)
 				{
 					// End of burn -> no more thrust
-					if(rocket_state.propeller_mass < 0 || rocket_control.force.z == 0)
+					if(rocket_state.propeller_mass < 0 || gimbal_state.thrust == 0)
 					{
 						rocket_fsm.state_machine = "Coast";
 					}

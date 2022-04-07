@@ -4,7 +4,7 @@
 *
 * Inputs: 
 *   - Finite state machine from the template_fsm :	     /gnc_fsm_pub
-*   - Measured 3D force and torque from av_interface:	 /control_measured
+*   - State of the gimbal (position and thrust):	 	 /gimbal_state_0
 *   - Sensor data (IMU and barometer) from av_interface: /sensor_pub
 *
 * Parameters:
@@ -21,8 +21,8 @@
 
 #include "real_time_simulator/FSM.h"
 #include "real_time_simulator/State.h"
-#include "real_time_simulator/Control.h"
 #include "real_time_simulator/Sensor.h"
+#include "real_time_simulator/Gimbal.h"
 
 #include "geometry_msgs/Vector3.h"
 
@@ -56,8 +56,8 @@ class NavigationNode {
 		// Last received fsm
 		real_time_simulator::FSM rocket_fsm;
 
-		// Last received control
-		real_time_simulator::Control rocket_control;
+		// Last received feedback control
+		real_time_simulator::Gimbal gimbal_state;
 
 		// Last received sensor data
 		real_time_simulator::Sensor rocket_sensor;
@@ -125,7 +125,7 @@ class NavigationNode {
 			fsm_sub = nh.subscribe("gnc_fsm_pub", 1, &NavigationNode::fsmCallback, this);
 
 			// Subscribe to control for kalman estimator
-			control_sub = nh.subscribe("control_measured", 1, &NavigationNode::controlCallback, this);
+			control_sub = nh.subscribe("gimbal_state_0", 1, &NavigationNode::controlCallback, this);
 
 			// Subscribe to sensor for kalman correction
 			sensor_sub = nh.subscribe("sensor_pub", 1, &NavigationNode::sensorCallback, this);
@@ -141,10 +141,11 @@ class NavigationNode {
 		}
 
 		// Callback function to store last received control
-		void controlCallback(const real_time_simulator::Control::ConstPtr& control)
+		void controlCallback(const real_time_simulator::Gimbal::ConstPtr& state)
 		{
-			rocket_control.torque = control->torque;
-			rocket_control.force = control->force;
+			gimbal_state.outer_angle = state->outer_angle;
+			gimbal_state.inner_angle = state->inner_angle;
+			gimbal_state.thrust = state->thrust;
 		}
 
 		// Callback function to store last received sensor data
@@ -163,9 +164,6 @@ class NavigationNode {
 		{
 			// -------------- Simulation variables -----------------------------
 			double g0 = 9.81;  // Earth gravity in [m/s^2]
-
-			Eigen::Matrix<double, 3, 1> rocket_force;
-			rocket_force << rocket_control.force.x, rocket_control.force.y, rocket_control.force.z;
 
 			// Orientation of the rocket with quaternion
 			Eigen::Quaternion<double> attitude(x(9), x(6), x(7), x(8));
@@ -195,7 +193,7 @@ class NavigationNode {
 			xdot.segment(10, 3) << 0, 0, 0;
 
 			// Mass variation is proportional to total thrust
-			xdot(13) = -rocket_force.norm()/(rocket.Isp*g0);
+			xdot(13) = -gimbal_state.thrust/(rocket.Isp*g0);
 		}
 
 		void RK4(double dT)

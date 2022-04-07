@@ -13,7 +13,7 @@
 *   - Control loop period control_thread()
 *
 * Outputs:
-*   - Commanded 3D force and torque for the rocket engine:  /control_pub
+*   - Commanded angles and thrust for the rocket gimbal:  /gimbal_command_0
 *
 */
 
@@ -25,8 +25,8 @@
 #include "real_time_simulator/State.h"
 #include "real_time_simulator/Waypoint.h"
 #include "real_time_simulator/Trajectory.h"
+#include "real_time_simulator/Gimbal.h"
 
-#include "real_time_simulator/Control.h"
 #include "geometry_msgs/Vector3.h"
 
 #include "real_time_simulator/GetFSM.h"
@@ -39,6 +39,9 @@
 #include <iomanip>
 #include <iostream>
 #include <chrono>
+
+#include "Eigen/Core"
+#include "Eigen/Geometry"
 
 #include "rocket_model.hpp"
 
@@ -80,7 +83,7 @@ class ControlNode {
       void initTopics(ros::NodeHandle &nh) 
       {
         // Create control publisher
-        control_pub = nh.advertise<real_time_simulator::Control>("control_pub", 10);
+        control_pub = nh.advertise<real_time_simulator::Gimbal>("gimbal_command_0", 10);
 
         // Subscribe to state message from basic_gnc
         rocket_state_sub = nh.subscribe("kalman_rocket_state", 1, &ControlNode::rocket_stateCallback, this);
@@ -107,23 +110,38 @@ class ControlNode {
         rocket_fsm.time_now = fsm->time_now;
       }
 
-      real_time_simulator::Control P_control()
+      real_time_simulator::Gimbal basic_control()
       {
         // Init control message
-        real_time_simulator::Control control_law;
-        geometry_msgs::Vector3 thrust_force;
-        geometry_msgs::Vector3 thrust_torque;
+        real_time_simulator::Gimbal control_law;
 
-        thrust_force.x = -200*rocket_state.twist.angular.y;
-        thrust_force.y = -200*rocket_state.twist.angular.x;
-        thrust_force.z = rocket.get_full_thrust(rocket_fsm.time_now);
+        control_law.thrust = rocket.get_full_thrust(rocket_fsm.time_now);
+        control_law.outer_angle = 2e-2*rocket_state.twist.angular.x;
+        control_law.inner_angle = 2e-2*rocket_state.twist.angular.y;
 
-        thrust_torque.x = thrust_force.y*rocket.total_CM;
-        thrust_torque.y = thrust_force.x*rocket.total_CM;
-        thrust_torque.z = -10*rocket_state.twist.angular.z;
+        return control_law;
+      }
 
-        control_law.force = thrust_force;
-        control_law.torque = thrust_torque;
+      real_time_simulator::Gimbal PD_attitude_control()
+      {
+        // Init control message
+        real_time_simulator::Gimbal control_law;
+
+        Eigen::Quaternion<double> attitude(rocket_state.pose.orientation.w, rocket_state.pose.orientation.x, rocket_state.pose.orientation.y, rocket_state.pose.orientation.z);
+        Eigen::Matrix<double, 3, 3> rot_matrix = attitude.toRotationMatrix();
+        
+        // Convert angular rate in body frame
+        Eigen::Matrix<double, 3, 1> angular_rate{rocket_state.twist.angular.x, rocket_state.twist.angular.y, rocket_state.twist.angular.z};
+        angular_rate = rot_matrix.transpose()*angular_rate;
+
+        // Basic PD controller in orientation
+        // Outer gimbal rotates around rocket X axis
+        // Inner gimbal rotates around rotated Y axis
+        control_law.outer_angle = 1e-1*rocket_state.pose.orientation.x + 7e-1*angular_rate(0);
+        control_law.inner_angle = 1e-1*rocket_state.pose.orientation.y + 7e-1*angular_rate(1);
+
+        // Basic PD controller in altitude to reach 20 meters
+        control_law.thrust = 10*(20-rocket_state.pose.position.z) + 9.81*(rocket_state.propeller_mass+rocket.dry_mass) - 20*rocket_state.twist.linear.z;
 
         return control_law;
       }
@@ -132,7 +150,7 @@ class ControlNode {
       void updateControl()
       {
         // Init default control to zero
-        real_time_simulator::Control control_law;
+        real_time_simulator::Gimbal control_law;
 
         //Get current FSM and time
         if(client_fsm.call(srv_fsm))
@@ -150,12 +168,12 @@ class ControlNode {
         {
           if (rocket_fsm.state_machine.compare("Rail") == 0)
           {
-            control_law = P_control();
+            control_law = PD_attitude_control();
           }
 
           else if (rocket_fsm.state_machine.compare("Launch") == 0)
           {
-            control_law = P_control();
+            control_law = PD_attitude_control();
           }
 
           else if (rocket_fsm.state_machine.compare("Coast") == 0)

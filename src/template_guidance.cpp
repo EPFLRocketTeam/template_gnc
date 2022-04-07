@@ -12,7 +12,7 @@
 *
 * Outputs:
 *   - Reference trajectory:                           /target_trajectory
-*   - Zero force and torque at engine shutdown time:  /control_pub
+*   - Zero thrust at engine shutdown time:            /gimbal_command_0
 *
 */
 
@@ -25,7 +25,7 @@
 #include "real_time_simulator/Waypoint.h"
 #include "real_time_simulator/Trajectory.h"
 
-#include "real_time_simulator/Control.h"
+#include "real_time_simulator/Gimbal.h"
 #include "geometry_msgs/Vector3.h"
 
 #include "real_time_simulator/GetFSM.h"
@@ -83,7 +83,7 @@ class GuidanceNode{
         target_trajectory_pub = nh.advertise<real_time_simulator::Trajectory>("target_trajectory", 10);
 
         // Create control publisher
-	      control_pub = nh.advertise<real_time_simulator::Control>("control_pub", 1);
+	      control_pub = nh.advertise<real_time_simulator::Gimbal>("gimbal_command_0", 1);
 
         // Subscribe to state message from basic_gnc
         rocket_state_sub = nh.subscribe("kalman_rocket_state", 1, &GuidanceNode::rocket_stateCallback, this);
@@ -174,7 +174,7 @@ class GuidanceNode{
             if(predicted_apogee>rocket.target_apogee[2])
             {
               // Send zero force&torque control command
-              real_time_simulator::Control control_law;
+              real_time_simulator::Gimbal control_law;
               control_pub.publish(control_law);
             }
 
