@@ -45,6 +45,7 @@
 
 #define DEG2RAD 0.01745329251
 
+using namespace Eigen;
 
 class NavigationNode {
 
@@ -94,14 +95,16 @@ class NavigationNode {
 			nh.getParam("/environment/rail_zenith", zenith);
 			nh.getParam("/environment/rail_azimuth", azimuth);
 
-			roll *= DEG2RAD; zenith *= DEG2RAD; azimuth *= DEG2RAD;
+			roll *= M_PI / 180;
+			zenith *= M_PI / 180;
+			azimuth *= M_PI / 180;
 
-			typedef Eigen::EulerSystem<-Eigen::EULER_Z, Eigen::EULER_Y, Eigen::EULER_Z> Rail_system;
-			typedef Eigen::EulerAngles<double, Rail_system> angle_type;
+			typedef EulerSystem<EULER_Z, EULER_Y, EULER_Z> Rail_system;
+			typedef EulerAngles<double, Rail_system> angle_type;
 
 			angle_type init_angle(azimuth, zenith, roll);
 
-			Eigen::Quaterniond q(init_angle);
+			Quaterniond q(init_angle);
 
 			// Init state X   
 			X << 0, 0, 0,   0, 0, 0,     0.0, 0.0 , 0.0 , 1.0 ,     0.0, 0.0, 0.0,    rocket.propellant_mass;

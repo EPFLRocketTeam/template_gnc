@@ -9,6 +9,10 @@
       <rosparam file="$(find template_gnc)/config/rocket_parameters.yaml" />
   </group>
 
+  <group ns="actuator">
+      <rosparam file="$(find template_gnc)/config/actuator_parameters.yaml" />
+  </group>
+
   <group ns="environment">
       <rosparam file="$(find template_gnc)/config/environment_parameters.yaml" />
   </group>
