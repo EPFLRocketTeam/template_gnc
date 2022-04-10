@@ -1,20 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(template_control)
-
-set(CMAKE_MODULE_PATH /usr/local/share/cmake/Modules/)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
-set(CMAKE_VERBOSE_MAKEFILE “ON”)
-
-option(BUILD_RELEASE "Build release version w/o debugging symbols" ON)
-if (BUILD_RELEASE)
-    set(CMAKE_BUILD_TYPE "Release")
-else ()
-    set(CMAKE_BUILD_TYPE "Debug")
-endif ()
+project(template_navigation)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -23,20 +8,14 @@ endif ()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        rospy
-        roslib
-        std_msgs
-        message_generation
-        geometry_msgs
-        genmsg
-        visualization_msgs
-        tf2_ros
-        real_time_simulator
-        )
+  roscpp
+  rospy
+  std_msgs
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -68,14 +47,18 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-#add_message_files(
-#        FILES
-#)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
-#add_service_files(
-#        FILES
-#)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -85,12 +68,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-        DEPENDENCIES
-        std_msgs
-        geometry_msgs
-        real_time_simulator
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -122,10 +103,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES tvc_simulator
-        CATKIN_DEPENDS roscpp rospy std_msgs message_runtime geometry_msgs real_time_simulator #polympc-ros
-        #  DEPENDS system_lib
+#  INCLUDE_DIRS include
+#  LIBRARIES template_navigation
+#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  DEPENDS system_lib
 )
 
 ###########
@@ -135,13 +116,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
+# include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/tvc_simulator.cpp
+#   src/${PROJECT_NAME}/template_navigation.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -152,7 +133,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/tvc_simulator_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/template_navigation_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -178,10 +159,10 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS
-        scripts/av_interface.py
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
+# catkin_install_python(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
@@ -196,7 +177,7 @@ catkin_install_python(PROGRAMS
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 # )
- 
+
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -216,28 +197,10 @@ catkin_install_python(PROGRAMS
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_tvc_simulator.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_template_navigation.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(template_fsm src/template_fsm.cpp)
-target_link_libraries(template_fsm ${catkin_LIBRARIES})
-add_dependencies(template_fsm ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(template_control src/template_control.cpp)
-target_link_libraries(template_control ${catkin_LIBRARIES})
-add_dependencies(template_control ${catkin_EXPORTED_TARGETS})
-
-add_executable(template_guidance src/template_guidance.cpp)
-target_link_libraries(template_guidance ${catkin_LIBRARIES})
-add_dependencies(template_guidance ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(template_navigation src/template_navigation.cpp)
-target_link_libraries(template_navigation ${catkin_LIBRARIES})
-add_dependencies(template_navigation ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-
