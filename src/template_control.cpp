@@ -25,7 +25,8 @@
 #include "real_time_simulator/State.h"
 #include "real_time_simulator/Waypoint.h"
 #include "real_time_simulator/Trajectory.h"
-#include "real_time_simulator/Gimbal.h"
+#include "real_time_simulator/GimbalMsg.h"
+#include "real_time_simulator/ControlMomentGyroMsg.h"
 
 #include "geometry_msgs/Vector3.h"
 
@@ -57,7 +58,8 @@ class ControlNode {
       real_time_simulator::FSM rocket_fsm;
 
       // List of subscribers and publishers
-      ros::Publisher control_pub;
+      ros::Publisher gimbal_command_pub;
+      ros::Publisher cmg_command_pub;
 
       ros::Subscriber rocket_state_sub;
       ros::Subscriber fsm_sub;
@@ -83,7 +85,8 @@ class ControlNode {
       void initTopics(ros::NodeHandle &nh) 
       {
         // Create control publisher
-        control_pub = nh.advertise<real_time_simulator::Gimbal>("gimbal_command_0", 10);
+        gimbal_command_pub = nh.advertise<real_time_simulator::GimbalMsg>("gimbal_command_0", 10);
+        cmg_command_pub = nh.advertise<real_time_simulator::ControlMomentGyroMsg>("cmg_command_0", 10);
 
         // Subscribe to state message from basic_gnc
         rocket_state_sub = nh.subscribe("kalman_rocket_state", 1, &ControlNode::rocket_stateCallback, this);
@@ -110,22 +113,29 @@ class ControlNode {
         rocket_fsm.time_now = fsm->time_now;
       }
 
-      real_time_simulator::Gimbal basic_control()
+      real_time_simulator::GimbalMsg basic_control()
       {
         // Init control message
-        real_time_simulator::Gimbal control_law;
+        real_time_simulator::GimbalMsg control_law;
+
+        Eigen::Quaternion<double> attitude(rocket_state.pose.orientation.w, rocket_state.pose.orientation.x, rocket_state.pose.orientation.y, rocket_state.pose.orientation.z);
+        Eigen::Matrix<double, 3, 3> rot_matrix = attitude.toRotationMatrix();
+        
+        // Convert angular rate in body frame
+        Eigen::Matrix<double, 3, 1> angular_rate{rocket_state.twist.angular.x, rocket_state.twist.angular.y, rocket_state.twist.angular.z};
+        angular_rate = rot_matrix.transpose()*angular_rate;
 
         control_law.thrust = rocket.get_full_thrust(rocket_fsm.time_now);
-        control_law.outer_angle = 2e-2*rocket_state.twist.angular.x;
-        control_law.inner_angle = 2e-2*rocket_state.twist.angular.y;
+        control_law.outer_angle = 2e-2*angular_rate(0);
+        control_law.inner_angle = 2e-2*angular_rate(1);
 
         return control_law;
       }
 
-      real_time_simulator::Gimbal PD_attitude_control()
+      real_time_simulator::GimbalMsg PD_attitude_control()
       {
         // Init control message
-        real_time_simulator::Gimbal control_law;
+        real_time_simulator::GimbalMsg gimbal_control;
 
         Eigen::Quaternion<double> attitude(rocket_state.pose.orientation.w, rocket_state.pose.orientation.x, rocket_state.pose.orientation.y, rocket_state.pose.orientation.z);
         Eigen::Matrix<double, 3, 3> rot_matrix = attitude.toRotationMatrix();
@@ -137,20 +147,38 @@ class ControlNode {
         // Basic PD controller in orientation
         // Outer gimbal rotates around rocket X axis
         // Inner gimbal rotates around rotated Y axis
-        control_law.outer_angle = 1e-1*rocket_state.pose.orientation.x + 7e-1*angular_rate(0);
-        control_law.inner_angle = 1e-1*rocket_state.pose.orientation.y + 7e-1*angular_rate(1);
+        gimbal_control.outer_angle = 1e-1*rocket_state.pose.orientation.x + 7e-1*angular_rate(0);
+        gimbal_control.inner_angle = 1e-1*rocket_state.pose.orientation.y + 7e-1*angular_rate(1);
 
         // Basic PD controller in altitude to reach 20 meters
-        control_law.thrust = 10*(20-rocket_state.pose.position.z) + 9.81*(rocket_state.propeller_mass+rocket.dry_mass) - 20*rocket_state.twist.linear.z;
+        gimbal_control.thrust = 10*(20-rocket_state.pose.position.z) + 9.81*(rocket_state.propeller_mass+rocket.dry_mass) - 20*rocket_state.twist.linear.z;
 
-        return control_law;
+        return gimbal_control;
+      }
+
+      real_time_simulator::ControlMomentGyroMsg roll_control(){
+
+        real_time_simulator::ControlMomentGyroMsg cmg_control;
+
+        Eigen::Quaternion<double> attitude(rocket_state.pose.orientation.w, rocket_state.pose.orientation.x, rocket_state.pose.orientation.y, rocket_state.pose.orientation.z);
+        Eigen::Matrix<double, 3, 3> rot_matrix = attitude.toRotationMatrix();
+        
+        // Convert angular rate in body frame
+        Eigen::Matrix<double, 3, 1> angular_rate{rocket_state.twist.angular.x, rocket_state.twist.angular.y, rocket_state.twist.angular.z};
+        angular_rate = rot_matrix.transpose()*angular_rate;
+
+        cmg_control.outer_angle = 0;
+        cmg_control.inner_angle = 0;
+        cmg_control.torque = 5e0*angular_rate(2);
+
+        return cmg_control;
       }
 
 
       void updateControl()
       {
         // Init default control to zero
-        real_time_simulator::Gimbal control_law;
+        real_time_simulator::GimbalMsg gimbal_control;
 
         //Get current FSM and time
         if(client_fsm.call(srv_fsm))
@@ -168,20 +196,22 @@ class ControlNode {
         {
           if (rocket_fsm.state_machine.compare("Rail") == 0)
           {
-            control_law = PD_attitude_control();
+            gimbal_control = basic_control();
           }
 
           else if (rocket_fsm.state_machine.compare("Launch") == 0)
           {
-            control_law = PD_attitude_control();
+            gimbal_control = basic_control();
+            cmg_command_pub.publish(roll_control());
+            
           }
 
           else if (rocket_fsm.state_machine.compare("Coast") == 0)
           {
-
+            cmg_command_pub.publish(roll_control());
           }
         
-          control_pub.publish(control_law);
+          gimbal_command_pub.publish(gimbal_control);
         }
       }
 

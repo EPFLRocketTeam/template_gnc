@@ -19,7 +19,7 @@
 #include "real_time_simulator/FSM.h"
 #include "real_time_simulator/State.h"
 #include "real_time_simulator/Sensor.h"
-#include "real_time_simulator/Gimbal.h"
+#include "real_time_simulator/GimbalMsg.h"
 
 #include <time.h>
 
@@ -40,7 +40,7 @@ class FsmNode {
 		real_time_simulator::Sensor rocket_sensor;
 
 		// Last received feedback control
-		real_time_simulator::Gimbal gimbal_state;
+		real_time_simulator::GimbalMsg gimbal_state;
 
 		// Last received rocket state
 		real_time_simulator::State rocket_state;
@@ -110,7 +110,7 @@ class FsmNode {
 		}
 
 		// Callback function to store last received commanded control
-		void controlCallback(const real_time_simulator::Gimbal::ConstPtr& state)
+		void controlCallback(const real_time_simulator::GimbalMsg::ConstPtr& state)
 		{
 			gimbal_state.outer_angle = state->outer_angle;
 			gimbal_state.inner_angle = state->inner_angle;
