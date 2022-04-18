@@ -24,9 +24,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  geometry_msgs
-  visualization_msgs
-  tf2_ros
   rocket_utils
   )
 
@@ -121,8 +118,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  #  LIBRARIES template_guidance
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime geometry_msgs rocket_utils
+  #  LIBRARIES template_control
+  CATKIN_DEPENDS roscpp rospy std_msgs rocket_utils
   #  DEPENDS system_lib
 )
 
@@ -139,7 +136,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/template_guidance.cpp
+#   src/${PROJECT_NAME}/template_control.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -151,26 +148,9 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-#add_executable(template_fsm src/template_fsm.cpp)
-#target_link_libraries(template_fsm ${catkin_LIBRARIES})
-#add_dependencies(template_fsm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(template_control src/template_control_node.cpp)
-target_link_libraries(template_control Eigen3::Eigen ${catkin_LIBRARIES})
-add_dependencies(template_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-#add_executable(template_guidance src/template_guidance.cpp)
-#target_link_libraries(template_guidance ${catkin_LIBRARIES})
-#add_dependencies(template_guidance ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#
-#add_executable(template_navigation src/template_navigation.cpp)
-#target_link_libraries(template_navigation Eigen3::Eigen ${catkin_LIBRARIES})
-#add_dependencies(template_navigation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+add_executable(template_control_node src/template_control_node.cpp)
+target_link_libraries(template_control_node Eigen3::Eigen ${catkin_LIBRARIES})
+add_dependencies(template_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
@@ -219,11 +199,10 @@ add_dependencies(template_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_E
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_template_guidance.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_template_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
