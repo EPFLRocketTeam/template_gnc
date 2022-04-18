@@ -27,10 +27,10 @@ import serial
 from scipy.interpolate import interp1d 
 import time
 
-from real_time_simulator.msg import Control
-from real_time_simulator.msg import FSM
-from real_time_simulator.msg import State
-from real_time_simulator.msg import Sensor
+from rocket_utils.msg import Control
+from rocket_utils.msg import FSM
+from rocket_utils.msg import State
+from rocket_utils.msg import Sensor
 
 
 rocket_state = State()
