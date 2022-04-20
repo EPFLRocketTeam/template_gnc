@@ -64,6 +64,8 @@ public:
                 break;
             }
 
+            // Compute attitude control and send control message
+            // in both RAIL and LAUNCH mode
             case RAIL:
             case LAUNCH: {
                 // Compute control
@@ -91,6 +93,8 @@ public:
                 break;
             }
 
+            // Compute roll control and send control message
+            // in both LAUNCH and COAST mode
             case LAUNCH:
             case COAST: {
                 // Compute roll control
