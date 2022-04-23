@@ -1,20 +1,31 @@
 #!/bin/bash
 
+if [[ $# -ne 1 ]]; then
+    echo "Please specify the new package name" >&2
+    exit 2
+fi
+
 packageName=$1
 packageName="${packageName,,}"
 
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-find "${SCRIPTPATH}/.." -type f -exec sed -i -e 's/template_/'"$packageName"'_/g' {} \;
+TEMPLATE_GNC_PATH=$(realpath $(dirname $0)/..)
 
-rm -rf ${SCRIPTPATH}/../.git
+rm -rf "$TEMPLATE_GNC_PATH"/.git
 
-mv ${SCRIPTPATH}/../src/template_control.cpp ${SCRIPTPATH}/../src/${packageName}_control.cpp 
-mv ${SCRIPTPATH}/../src/template_navigation.cpp ${SCRIPTPATH}/../src/${packageName}_navigation.cpp 
-mv ${SCRIPTPATH}/../src/template_guidance.cpp ${SCRIPTPATH}/../src/${packageName}_guidance.cpp 
-mv ${SCRIPTPATH}/../src/template_fsm.cpp ${SCRIPTPATH}/../src/${packageName}_fsm.cpp 
+# rename file contents
+find "$TEMPLATE_GNC_PATH" -type f -exec sed -i -e 's/template_/'"$packageName"'_/g' {} \;
+find "$TEMPLATE_GNC_PATH" -type f -exec sed -i -e 's/Template/'"${packageName^}"'/g' {} \;
 
-mv ${SCRIPTPATH}/../launch/template_SIL.launch ${SCRIPTPATH}/../launch/${packageName}_SIL.launch 
+#rename directories and filenames
+for depth in $(seq 0 4);
+do
+    find "$TEMPLATE_GNC_PATH"/* -maxdepth $depth -name "*template*" | while read -r file; do
+        cd $(dirname $file)
+        filename=$(basename $file)
+        mv "$filename" "${filename//template/$packageName}"
+    done
+done
 
-mv ${SCRIPTPATH}/../../template_gnc ${SCRIPTPATH}/../../${packageName}_gnc 
+mv "$TEMPLATE_GNC_PATH" "${TEMPLATE_GNC_PATH//template/$packageName}"
 
 echo "Updated name of package to $packageName""_gnc"
