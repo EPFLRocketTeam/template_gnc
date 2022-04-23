@@ -50,6 +50,7 @@ class FsmNode {
 		ros::Subscriber rocket_state_sub;
 		ros::Subscriber sensor_sub;
 		ros::Subscriber control_sub;
+        ros::Subscriber command_sub;
 
 		// Other parameters
 		double rail_length = 0;
@@ -61,10 +62,10 @@ class FsmNode {
         	initTopics(nh);
 
 			// Initialize fsm
-			rocket_fsm.state_machine = "Idle";
+			rocket_fsm.state_machine = rocket_utils::FSM::IDLE;
 
 			// Overwrite rocket mass to stay in launch mode at first iteration
-			rocket_state.propeller_mass = 10;  
+			rocket_state.propeller_mass = 10;
 
 
 			timer_pub.publish(rocket_fsm);
@@ -72,7 +73,7 @@ class FsmNode {
 			nh.getParam("/environment/rail_length", rail_length);
 		}
 
-		void initTopics(ros::NodeHandle &nh) 
+		void initTopics(ros::NodeHandle &nh)
 		{
 			// Create timer publisher and associated thread (100Hz)
 			timer_pub = nh.advertise<rocket_utils::FSM>("gnc_fsm_pub", 10);
@@ -85,6 +86,9 @@ class FsmNode {
 
 			// Subscribe to commanded control message
 			control_sub = nh.subscribe("gimbal_command_0", 1, &FsmNode::controlCallback, this);
+
+            // Subscribe to commands
+            command_sub = nh.subscribe("/commands", 10, &FsmNode::processCommand, this);
 		}
 
 		void rocket_stateCallback(const rocket_utils::State::ConstPtr& new_rocket_state)
@@ -110,17 +114,21 @@ class FsmNode {
 			gimbal_state.thrust = state->thrust;
 		}
 
+        void processCommand(const std_msgs::String &command) {
+            if (command.data == "stop" || command.data == "Stop") {
+                rocket_fsm.state_machine = rocket_utils::FSM::STOP;
+            } else if (rocket_fsm.state_machine == rocket_utils::FSM::IDLE) {
+                //received launch command
+                time_zero = ros::Time::now();
+                rocket_fsm.state_machine = rocket_utils::FSM::RAIL;
+            }
+        }
+
 		void updateFSM()
 		{
-			// Idle mode: wait for high acceleration to trigger flight mode
 			if (rocket_fsm.state_machine.compare("Idle") == 0)
 			{
-				if(rocket_sensor.IMU_acc.z > 30)
-				{
-
-					rocket_fsm.state_machine = "Rail";
-					time_zero = ros::Time::now();
-				}
+                // Do nothing
 			}
 
 			else
@@ -128,7 +136,7 @@ class FsmNode {
 				// Update current time
 				rocket_fsm.header.stamp = ros::Time::now();
                 rocket_fsm.launch_time = time_zero;
-				
+
 				if (rocket_fsm.state_machine.compare("Rail") == 0)
 				{
 					// End of rail
@@ -154,7 +162,7 @@ class FsmNode {
 					// Do nothing for now
 				}
 
-				// Publish time + state machine    
+				// Publish time + state machine
 				timer_pub.publish(rocket_fsm);
 			}
 		}
@@ -176,10 +184,10 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 
 	FsmNode fsmNode(nh);
-	
+
 	// Thread to compute FSM. Duration defines interval time in seconds
 	ros::Timer FSM_thread = nh.createTimer(ros::Duration(0.001),
-	[&](const ros::TimerEvent&) 
+	[&](const ros::TimerEvent&)
 	{
 		fsmNode.updateFSM();
 	});
