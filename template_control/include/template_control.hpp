@@ -14,13 +14,14 @@ class TemplateController {
         double kp2 = 1e-1;
         double kd2 = 7e-1;
         double kp_roll = 5e0;
-    } config;
+    };
 
 public:
     // Constructor using default config
     TemplateController(RocketProps rocket_props) : TemplateController(Config{}, rocket_props) {}
 
     TemplateController(Config config_, RocketProps &rocket_props) :
+            config(config_),
             rocket_model(rocket_props) {
     }
 
@@ -68,5 +69,6 @@ public:
 
 
 private:
+    Config config;
     RocketModel rocket_model;
 };
