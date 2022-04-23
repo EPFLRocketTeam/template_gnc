@@ -52,13 +52,13 @@ public:
         return gimbal_control;
     }
 
-    RocketGyroMomentControl computeRollControl(const RocketState &rocket_state) {
+    RocketControlMomentGyro computeRollControl(const RocketState &rocket_state) {
         Eigen::Quaterniond attitude = toEigenQuaternion(rocket_state.orientation);
         Eigen::Matrix3d rot_matrix = attitude.toRotationMatrix();
         // Angular rate in body frame
         Eigen::Vector3d angular_rate = rot_matrix.transpose() * toEigen(rocket_state.angular_velocity);
 
-        RocketGyroMomentControl gmc_control;
+        RocketControlMomentGyro gmc_control;
         gmc_control.outer_angle = 0;
         gmc_control.inner_angle = 0;
         gmc_control.torque = config.kp_roll * angular_rate(2);

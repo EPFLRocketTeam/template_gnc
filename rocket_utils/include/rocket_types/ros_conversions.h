@@ -6,7 +6,7 @@
 #include <rocket_utils/FSM.h>
 #include <rocket_utils/State.h>
 #include <rocket_utils/GimbalControl.h>
-#include <rocket_utils/GyroMomentControl.h>
+#include <rocket_utils/ControlMomentGyro.h>
 
 namespace rocket {
 
@@ -66,8 +66,8 @@ namespace rocket {
         return control_ros;
     }
 
-    inline rocket_utils::GyroMomentControl toROS(const RocketGyroMomentControl &control) {
-        rocket_utils::GyroMomentControl control_ros;
+    inline rocket_utils::ControlMomentGyro toROS(const RocketControlMomentGyro &control) {
+        rocket_utils::ControlMomentGyro control_ros;
         control_ros.outer_angle = control.outer_angle;
         control_ros.inner_angle = control.inner_angle;;
         control_ros.torque = control.torque;
@@ -125,8 +125,8 @@ namespace rocket {
         return RocketGimbalControl{control.outer_angle, control.inner_angle, control.thrust};
     }
 
-    inline RocketGyroMomentControl fromROS(const rocket_utils::GyroMomentControl &control) {
-        return RocketGyroMomentControl{control.outer_angle, control.inner_angle, control.torque};
+    inline RocketControlMomentGyro fromROS(const rocket_utils::ControlMomentGyro &control) {
+        return RocketControlMomentGyro{control.outer_angle, control.inner_angle, control.torque};
     }
 
     inline RocketFSMState fromROS(const rocket_utils::FSM &fsm_msg) {

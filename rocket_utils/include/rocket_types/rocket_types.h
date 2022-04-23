@@ -58,7 +58,7 @@ namespace rocket {
         double thrust;
     };
 
-    struct RocketGyroMomentControl {
+    struct RocketControlMomentGyro {
         double outer_angle;
         double inner_angle;
         double torque;

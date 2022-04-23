@@ -46,7 +46,7 @@ public:
     void initTopics(ros::NodeHandle &nh) {
         // Create control publishers
         gimbal_command_pub = nh.advertise<rocket_utils::GimbalControl>("/gimbal_command_0", 10);
-        gmc_command_pub = nh.advertise<rocket_utils::GyroMomentControl>("/cmg_command_0", 10);
+        gmc_command_pub = nh.advertise<rocket_utils::ControlMomentGyro>("/cmg_command_0", 10);
 
         // Subscribe to state message from basic_gnc
         rocket_state_sub = nh.subscribe("/kalman_rocket_state", 1, &RocketControlNode::rocketStateCallback, this);
@@ -98,10 +98,10 @@ public:
             case LAUNCH:
             case COAST: {
                 // Compute roll control
-                RocketGyroMomentControl gmc_control = controller->computeRollControl(rocket_state);
+                RocketControlMomentGyro gmc_control = controller->computeRollControl(rocket_state);
 
                 // Convert to ROS message and publish
-                rocket_utils::GyroMomentControl gmc_control_msg = toROS(gmc_control);
+                rocket_utils::ControlMomentGyro gmc_control_msg = toROS(gmc_control);
                 gmc_control_msg.header.stamp = time_now;
                 gmc_command_pub.publish(gmc_control_msg);
                 break;
