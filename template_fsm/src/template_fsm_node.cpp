@@ -132,7 +132,7 @@ public:
 
       case LAUNCH: {
         // End of burn -> no more thrust
-        if (rocket_state.propeller_mass < 0 || gimbal_control.thrust == 0)
+        if (rocket_state.propeller_mass < 0 || (gimbal_control.thrust == 0 && rocket_state.position.z > 1))
         {
           current_fsm = RocketFSMState::COAST;
         }

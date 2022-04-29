@@ -9,6 +9,7 @@ using namespace rocket;
 
 class TemplateController
 {
+public:
   struct Config
   {
     double kp1 = 2e-2;
@@ -17,7 +18,6 @@ class TemplateController
     double kp_roll = 5e0;
   };
 
-public:
   // Constructor using default config
   TemplateController(RocketProps rocket_props) : TemplateController(Config{}, rocket_props)
   {
