@@ -84,6 +84,9 @@ public:
                 // Do nothing
                 break;
             }
+
+            default:
+                throw std::runtime_error("Unhandled FSM");
         }
 
         switch (rocket_fsm) {
@@ -111,6 +114,9 @@ public:
                 // Do nothing
                 break;
             }
+
+            default:
+                throw std::runtime_error("Unhandled FSM");
         }
     }
 

@@ -95,6 +95,9 @@ public:
                 // Do nothing
                 break;
             }
+
+            default:
+                throw std::runtime_error("Unhandled FSM");
         }
 
         // Convert the navigation state to ROS message and publish it
