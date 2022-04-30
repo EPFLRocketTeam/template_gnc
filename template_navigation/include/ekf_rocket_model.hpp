@@ -23,7 +23,7 @@ public:
     Eigen::Matrix3d rot_matrix = attitude.toRotationMatrix();
 
     Eigen::Vector3d omega = rot_matrix * imu_gyro;
-
+    
     // Angular velocity omega in quaternion format to compute quaternion derivative
     Eigen::Quaterniond omega_quat(0.0, omega(0), omega(1), omega(2));
 

@@ -53,6 +53,12 @@ private:
     stateDynamics(X_inter, k4);
 
     X = X + (k1 + 2 * k2 + 2 * k3 + k4) * dT / 6;
+
+    // Update angular rate state from IMU
+    Eigen::Quaterniond attitude(X(9), X(6), X(7), X(8));
+    Eigen::Matrix3d rot_matrix = attitude.toRotationMatrix();
+    // Angular rate in world frame
+    X.segment(10, 3) = rot_matrix * imu_gyro;
   }
 
 public:
