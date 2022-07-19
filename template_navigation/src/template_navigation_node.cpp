@@ -84,7 +84,8 @@ public:
       }
 
       case RAIL:
-      case LAUNCH: {
+      case LAUNCH:
+      case COAST: {
         navigation->predict(dT, imu_acc, imu_gyro, gimbal_control);
         // Perform an EKF update if a new barometer measurement was received
         if (baro_flag)
@@ -95,7 +96,6 @@ public:
         break;
       }
 
-      case COAST:
       case STOP: {
         // Do nothing
         break;
