@@ -8,7 +8,7 @@ fi
 packageName=$1
 packageName="${packageName,,}"
 
-TEMPLATE_GNC_PATH=$(realpath $(dirname $0)/..)
+TEMPLATE_GNC_PATH=$(realpath $(dirname $0)/../..)
 
 rm -rf "$TEMPLATE_GNC_PATH"/.git
 

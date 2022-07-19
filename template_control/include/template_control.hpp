@@ -14,7 +14,7 @@ public:
   {
     double kp1 = 2e-2;
     double kp2 = 1e-1;
-    double kd2 = 7e-1;
+    double kd2 = 1.5;
     double kp_roll = 5e0;
   };
 
